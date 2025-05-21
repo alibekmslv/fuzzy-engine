@@ -26,8 +26,8 @@ jobs:
         username: ${{ secrets.REMOTE_USER }}
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         port: 22
-      script: |
-        cd ~/app
-        git pull origin main
-        docker compose down
-        docker compose up -d --build
+        script: |
+          cd ~/app
+          git pull origin main
+          docker compose down
+          docker compose up -d --build
