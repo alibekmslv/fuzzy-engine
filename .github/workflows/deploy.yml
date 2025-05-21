@@ -15,16 +15,16 @@ jobs:
     - name: Set up SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519_no_passphrase
-        chmod 600 ~/.ssh/id_ed25519_no_passphrase
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+        chmod 600 ~/.ssh/id_ed25519
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
     - name: Test SSH connection
-      run: ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "whoami && pwd"
+      run: ssh -i ~/.ssh/id_ed25519 ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "whoami && pwd"
 
     - name: Deploy via SSH
       run: |
-        ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "
+        ssh -i ~/.ssh/id_ed25519 ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "
           cd ~/app &&
           git pull origin main &&
           docker compose down &&
