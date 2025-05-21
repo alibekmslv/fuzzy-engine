@@ -15,9 +15,12 @@ jobs:
     - name: Set up SSH key
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519_personal
-        chmod 600 ~/.ssh/id_ed25519_personal
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519_no_passphrase
+        chmod 600 ~/.ssh/id_ed25519_no_passphrase
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+    - name: Test SSH connection
+      run: ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "echo Connected!"
 
     - name: Deploy via SSH
       run: |
