@@ -20,13 +20,13 @@ jobs:
         ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
 
     - name: Test SSH connection
-      run: ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "echo Connected!"
+      run: ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "whoami && pwd"
 
     - name: Deploy via SSH
       run: |
-        ssh ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-          cd ~/app
-          git pull origin main
-          docker compose down
+        ssh -i ~/.ssh/id_ed25519_no_passphrase ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "
+          cd ~/app &&
+          git pull origin main &&
+          docker compose down &&
           docker compose up -d --build
-        EOF
+        "
