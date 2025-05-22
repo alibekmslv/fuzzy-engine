@@ -27,6 +27,6 @@ jobs:
         ssh -i ~/.ssh/id_ed25519 ${{ secrets.REMOTE_USER }}@${{ secrets.SERVER_IP }} "
           cd ~/app &&
           git pull origin main &&
-          docker compose down &&
-          docker compose up -d --build
+          docker compose -f docker-compose.prod.yaml down &&
+          docker compose -f docker-compose.prod.yaml up -d --build
         "

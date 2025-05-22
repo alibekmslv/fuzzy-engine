@@ -1,0 +1,33 @@
+services:
+  traefik:
+    image: traefik:v3
+    command:
+      - "--api.dashboard=true" # Включает веб-панель для мониторинга (по желанию)
+      - "--entrypoints.web.address=:80" # Создаем entrypoint "web" на порту 80 (HTTP)
+      - "--entrypoints.websecure.address=:443" # Создаем entrypoint "websecure" на порту 443 (HTTPS)
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--providers.docker=true" # Разрешаем Traefik автоматически находить сервисы в Docker
+      - "--providers.docker.exposedbydefault=false" # Только сервисы с label `traefik.enable=true` будут доступны
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true" # Включаем http-валидацию сертификатов
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web" # HTTP challenge должен использовать порт 80
+      - "--certificatesresolvers.myresolver.acme.email=${ACME_EMAIL}" # Email для получения SSL от Let's Encrypt
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json" # Файл, куда Traefik сохраняет SSL-сертификаты
+    ports:
+      - "80:80" # Проброс HTTP порта наружу
+      - "443:443" # Проброс HTTPS порта наружу
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro" # Даем Traefik доступ к Docker сокету
+      - "./letsencrypt:/letsencrypt" # Папка для хранения SSL сертификатов
+    restart: unless-stopped # Перезапуск если упал
+  app:
+    build:
+      context: .
+    environment:
+      NODE_ENV: production
+    labels:
+      - "traefik.enable=true" # Разрешаем Traefik видеть этот сервис
+      - "traefik.http.routers.app.rule=Host(`${APP_HOST_NAME}`)" # Обработка запросов на адрес
+      - "traefik.http.routers.app.entrypoints=websecure" # Привязываем к HTTPS entrypoint
+      - "traefik.http.routers.app.tls.certresolver=myresolver" # Используем Let's Encrypt сертификат
+      - "traefik.http.services.app.loadbalancer.server.port=3000" # Приложение слушает порт 3000 внутри контейнера
