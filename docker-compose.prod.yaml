@@ -33,3 +33,5 @@ services:
       - "traefik.http.routers.app.entrypoints=websecure" # Привязываем к HTTPS entrypoint
       - "traefik.http.routers.app.tls.certresolver=myresolver" # Используем Let's Encrypt сертификат
       - "traefik.http.services.app.loadbalancer.server.port=3000" # Приложение слушает порт 3000 внутри контейнера
+    ports:
+      - 3000:3000
