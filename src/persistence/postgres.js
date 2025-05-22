@@ -1,5 +1,6 @@
 const waitPort = require('wait-port');
 const fs = require('fs');
+const path = require('path');
 const { Client } = require('pg');
 
 const {
@@ -11,6 +12,8 @@ const {
     POSTGRES_PASSWORD_FILE: PASSWORD_FILE,
     POSTGRES_DB: DB,
     POSTGRES_DB_FILE: DB_FILE,
+    POSTGRES_PORT: PORT,
+    POSTGRES_PORT_FILE: PORT_FILE,
 } = process.env;
 
 let client;
@@ -20,10 +23,12 @@ async function init() {
     const user = USER_FILE ? fs.readFileSync(USER_FILE) : USER;
     const password = PASSWORD_FILE ? fs.readFileSync(PASSWORD_FILE, 'utf8') : PASSWORD;
     const database = DB_FILE ? fs.readFileSync(DB_FILE) : DB;
+    const port = Number(PORT_FILE ? fs.readFileSync(PORT_FILE) : PORT);
+    const sslCertAbsPath = 'certs/ca-certificate.crt';
 
     await waitPort({ 
         host, 
-        port: 5432,
+        port,
         timeout: 10000,
         waitForDns: true,
     });
@@ -32,7 +37,12 @@ async function init() {
         host,
         user,
         password,
-        database
+        database,
+        port,
+        ssl: {
+          ca: fs.readFileSync(path.resolve(process.cwd(), sslCertAbsPath)).toString(),
+          rejectUnauthorized: true,
+        },
     });
 
     return client.connect().then(async () => {
